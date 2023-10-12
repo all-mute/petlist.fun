@@ -1,5 +1,6 @@
 #import flet_fastapi
 import flet as ft
+from flet import padding
 
 from app.utils import *
 from app.app import MainApp
@@ -13,7 +14,7 @@ async def main(page: ft.Page):
     page.horizontal_alignment = "center"
     page.scroll = "adaptive"
     page.fonts = get_fonts()
-    page.padding = 4
+    page.padding = padding.symmetric(vertical=0, horizontal=4)
     await page.update_async()
     app = MainApp(page)
     await page.add_async(app)

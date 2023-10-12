@@ -42,6 +42,7 @@ class MainApp(UserControl):
                 GridWithHashtags([default_project, default_project2] * 33),
             ],
             width=1142,
+            spacing=0,
         )
 
         return self.layout
