@@ -144,7 +144,7 @@ def get_project_dialog(project: Project, **kwargs):
             project=project,
             **kwargs
         ),
-        inset_padding=padding.symmetric(vertical=24, horizontal=4),
+        # inset_padding=padding.symmetric(vertical=24, horizontal=4),
     )
 
     return ad
