@@ -17,7 +17,25 @@ from datetime import datetime
 
 
 class Project:
-    def __init__(self, author, title, description, likes, tags, public, liked_by_user):
+    def __init__(self, id_, upid, created_at, updated_at, name, description, hashtags, n_likes, liked_by, author_email, public):
+        self.id = id_
+        self.upid = upid
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.name = name
+        self.description = description
+        self.hashtags = hashtags
+        self.n_likes = n_likes
+        self.liked_by = liked_by
+        self.author_email = author_email
+        self.public = public
+
+    def __str__(self):
+        return f"{self.id}, {self.upid}, {self.name}, {self.description}, {self.hashtags}, {self.n_likes}, {self.liked_by}, {self.author_email}, {self.public}, {self.created_at}, {self.updated_at}"
+
+
+class Project_:
+    def __init__(self, author, title, description, likes, tags, public, liked_by_users):
         self._author = author
         self._title = title
         self._description = description
@@ -26,7 +44,7 @@ class Project:
         self._created_at = datetime.now()
         self._updated_at = datetime.now()
         self._public = public
-        self._liked_by_user = liked_by_user
+        self._liked_by_user = liked_by_users
 
     @property
     def author(self):
@@ -104,14 +122,14 @@ class Project:
         return f"Author: {self.author}\nTitle: {self.title}\nDescription: {self.description}\nLikes: {self.likes}\nTags: {self.tags}\nCreated At: {self.created_at}\nUpdated At: {self.updated_at}\nPublic: {self.public}\nLiked By User: {self.liked_by_user}"
 
 
-default_project = Project(
+"""default_project = Project(
     author="John Doe",
     title="my project" * 6,
     description="This is a sample project",
     likes=0,
     tags=["#ml", "#open"],
     public=True,
-    liked_by_user=False,
+    liked_by_users=False,
 )
 
 default_project2 = Project(
@@ -121,8 +139,8 @@ default_project2 = Project(
     likes=0,
     tags=["#ml", "#open"],
     public=True,
-    liked_by_user=False,
-)
+    liked_by_users=False,
+)"""
 
 """print(default_project)
 ["rwvev"] * 10000000

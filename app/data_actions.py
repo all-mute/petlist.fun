@@ -1,4 +1,5 @@
-from app.class_project import Project
+from class_project import Project
+from supabase import create_client, Client
 
 """create table
   public.projects (
@@ -9,9 +10,10 @@ from app.class_project import Project
     description text null,
     hashtags text[] null,
     n_likes bigint null,
-    liked_by text[] null,
     author_email text null,
-    public boolean false,
+    public boolean null,
+    upid uuid null default gen_random_uuid (),
+    liked_by text[] null,
     constraint projects_pkey primary key (id)
   ) tablespace pg_default;"""
 
@@ -27,54 +29,193 @@ from app.class_project import Project
   ) tablespace pg_default;"""
 
 
-def get_projects(hashtags: list[str] or None):
+def init():
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    import os
+
+    url = os.environ.get("supa_api")
+    key = os.environ.get("supa_api_2")
+    sb_cli = create_client(url, key)
+    return sb_cli
+
+
+def transform_projects(data):
+    projects: list[Project] = [
+        Project(
+            id_=item['id'] if 'id' in item else None,
+            upid=item['upid'],
+            created_at=item['created_at'],
+            updated_at=item['updated_at'],
+            name=item['name'],
+            description=item['description'],
+            hashtags=item['hashtags'],
+            n_likes=item['n_likes'] if 'n_likes' in item else 0,
+            liked_by=item['liked_by'] if 'liked_by' in item else [],
+            author_email=item['author_email'],
+            public=item['public'],
+        )
+        for item in data
+    ]
+    return projects
+
+
+def transform_project_to_dict(project: Project):
+    res = dict()
+    for key in project.__dict__.keys():
+        if project.__dict__[key] is not None:
+            res[key] = project.__dict__[key]
+    return res
+
+
+def transform_users():
+    pass
+
+
+def get_projects(sb_client, hashtags: list[str] or None):
     if hashtags:
-        get_projects_with_hashtags(hashtags)
+        return get_projects_with_hashtags(sb_client, hashtags)
     else:
-        get_all_projects()
+        return get_all_projects(sb_client, )
 
 
-def get_projects_with_hashtags(hashtags: list[str]):
-    pass
+def get_projects_with_hashtags(sb_client, hashtags: list[str]):
+    try:
+        data = sb_client.table('projects').select("*").contains('hashtags', hashtags).execute()
+        print(data)
+    except Exception as e:
+        print(e)
+        return None, e
+    else:
+        projects = transform_projects(data.data)
+        return projects, None
 
 
-def get_all_projects():
-    pass
+def get_all_projects(sb_client, ):
+    try:
+        data = sb_client.table('projects').select("*").execute()
+        print(data)
+    except Exception as e:
+        print(e)
+        return None, e
+    else:
+        projects = transform_projects(data.data)
+        return projects, None
 
 
-def like_project(email: str, project_id: int):
-    pass
+def like_project(sb_client, email: str, project_id: int):
+    try:
+        # 1. add user to project_id's liked_by
+        # get current liked_by
+        data = sb_client.table('projects').select("*").eq('id', project_id).execute()
+        # add user to liked_by
+        data.data[0]['liked_by'].append(email)
+        # update project with new liked_by
+        sb_client.table('projects').update(data.data[0]).eq('id', project_id).execute()
+
+        # 2. add project_id to user's liked_projects
+        # get current liked_projects
+        data = sb_client.table('users').select("*").eq('email', email).execute()
+        # add project_id to liked_projects
+        data.data[0]['liked_projects'].append(project_id)
+        # update user with new liked_projects
+        sb_client.table('users').update(data.data[0]).eq('email', email).execute()
+
+    except Exception as e:
+        print(e)
+        return e
+    else:
+        return None
 
 
-def dislike_project(email: str, project_id: int):
-    pass
+
+def dislike_project(sb_client, email: str, project_id: int):
+    try:
+
+        # 1. add user to project_id's liked_by
+
+        # get current liked_by
+        data = sb_client.table('projects').select("*").eq('id', project_id).execute()
+        # remove user from liked_by
+        data.data[0]['liked_by'].remove(email)
+        # update project with new liked_by
+        sb_client.table('projects').update(data.data[0]).eq('id', project_id).execute()
+
+        # 2. add project_id to user's liked_projects
+
+        # get current liked_projects
+        data = sb_client.table('users').select("*").eq('email', email).execute()
+        # remove project_id from liked_projects
+        data.data[0]['liked_projects'].remove(project_id)
+        # update user with new liked_projects
+        sb_client.table('users').update(data.data[0]).eq('email', email).execute()
+
+    except Exception as e:
+        print(e)
+        return e
+    else:
+        return None
 
 
-def is_user_in_database(email: str):
-    pass
+def is_user_in_database(sb_client, email: str):
+    try:
+        data = sb_client.table('users').select("*").contains('email', email).execute()
+    except Exception as e:
+        print(e)
+        return False
+    else:
+        return bool(data.data)
 
 
-def authentication(email: str, platform_id: str):
-    if not is_user_in_database(email):
-        sign_up(email, platform_id)
+def authentication(sb_client, email: str):
+    if not is_user_in_database(sb_client, email):
+        return sign_up(sb_client, email)
 
 
-def sign_up(email: str, platform_id: str):
-    pass
+def sign_up(sb_client, email: str):
+    tmp = {"email": email}
+    try:
+        sb_client.table('users').insert(tmp).execute()
+    except Exception as e:
+        print(e)
+        return e
+    else:
+        return None
 
 
-def create_project(email: str, new_project: Project):
-    pass
+def create_project(sb_client, new_project: Project):
+    new_project = transform_project_to_dict(new_project)
+    try:
+        data = sb_client.table('projects').insert(new_project).execute()
+    except Exception as e:
+        print(e)
+        return None, e
+    else:
+        projects = transform_projects(data.data)
+        return projects, None
 
 
-def update_project(email: str, project_id: int, new_project: Project):
-    pass
+def update_project(sb_client, project_id: int, new_project: Project):
+    new_project = transform_project_to_dict(new_project)
+    try:
+        data = sb_client.table('projects').update(new_project).eq('id', project_id).execute()
+    except Exception as e:
+        print(e)
+        return None, e
+    else:
+        projects = transform_projects(data.data)
+        return projects, None
 
 
-def delete_project(email: str, project_id: int):
-    pass
-
-
+def delete_project(sb_client, project_id: int):
+    try:
+        sb_client.table('projects').delete().eq('id', project_id).execute()
+    except Exception as e:
+        print(e)
+        return e
+    else:
+        return None
 
 
 
