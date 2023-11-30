@@ -58,10 +58,10 @@ class GridWithHashtags(UserControl):
 
         self.cards = [
             ProjectCard(
-                project_name=project.title,
-                hashtags=project.tags,
-                number_of_likes=project.likes,
-                liked=project.liked_by_user
+                project_name=project.name,
+                hashtags=project.hashtags,
+                number_of_likes=project.n_likes,
+                liked=project.liked_by,
             )
             for project in self.projects
         ]

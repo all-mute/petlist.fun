@@ -121,6 +121,37 @@ class Project_:
     def __str__(self):
         return f"Author: {self.author}\nTitle: {self.title}\nDescription: {self.description}\nLikes: {self.likes}\nTags: {self.tags}\nCreated At: {self.created_at}\nUpdated At: {self.updated_at}\nPublic: {self.public}\nLiked By User: {self.liked_by_user}"
 
+default_project = Project(
+    id_=1,
+    upid=1,
+    created_at=datetime.now(),
+    updated_at=datetime.now(),
+    name="my project",
+    description="This is a sample project",
+    hashtags=["#ml", "#open"],
+    n_likes=0,
+    liked_by=["rwvev"],
+    author_email="qyVZd@example.com",
+    public=True
+
+
+)
+
+default_project2 = Project(
+    id_=1,
+    upid=1,
+    created_at=datetime.now(),
+    updated_at=datetime.now(),
+    name="my project" * 6,
+    description="This is a sample project",
+    hashtags=["#ml", "#open"],
+    n_likes=0,
+    liked_by=["rwvev"],
+    author_email="qyVZd@example.com",
+    public=True
+
+)
+
 
 """default_project = Project(
     author="John Doe",

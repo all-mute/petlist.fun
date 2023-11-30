@@ -73,7 +73,8 @@ class ProjectCard(UserControl):
         self.container_for_likes = \
             Container(
                 TextButton(
-                    text=(str(self.number_of_likes + int(self.liked)) + " 🔥"),
+                    #text=(str(self.number_of_likes + int(self.liked)) + " 🔥"),
+                    text=(str(4) + " 🔥"),
                     on_click=self.like_project,
                 )
             )
